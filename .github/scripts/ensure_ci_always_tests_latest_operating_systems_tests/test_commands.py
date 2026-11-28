@@ -23,7 +23,7 @@ from ensure_ci_always_tests_latest_operating_systems.token_owner import TokenSta
 
 from .helpers import FakeDownloader, FakeGitHub, fixture
 from .test_change_plan import (BASE, BASE_SHA, BOT_BRANCH, NO_PULL_REQUEST, RUN_URL, Night, android_with_sixteen_kb_37_3,
-                               read_file)
+                               read_file, todays_runner_images)
 from .test_required_xcode import downloads_for_band_11
 
 REPO = 'CommunityToolkit/Maui'
@@ -316,14 +316,14 @@ class PlanChangesTests(CommandTestCase):
         return code, read_state
 
     def test_today_writes_the_plan_files_and_reports_no_source_problem(self) -> None:
-        night = Night(self)
+        night = Night(self, images=todays_runner_images())
         code, read_state = self.run_plan(night)
         self.assertEqual(code, 0)
         for name in ('plan.json', 'changes.patch', 'pull-request-body.md', 'commit-message.txt', 'title.txt', 'summary.md'):
             self.assertTrue(os.path.exists(os.path.join(night.out, name)), name)
         outputs = self.written_outputs()
         self.assertIn('has-source-problems=false\n', outputs)
-        self.assertIn('pull-request-action=nothing\n', outputs)
+        self.assertIn('pull-request-action=open-or-update\n', outputs)
         self.assertEqual(read_state.call_args[0][1:], (BASE, BOT_BRANCH))
 
     def test_a_planned_change_gives_the_action_and_the_change_list_key(self) -> None:

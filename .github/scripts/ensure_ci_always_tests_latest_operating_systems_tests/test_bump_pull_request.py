@@ -4,6 +4,7 @@ import unittest
 from typing import Any, Dict, List, Optional
 
 from ensure_ci_always_tests_latest_operating_systems import bump_pull_request as module
+from ensure_ci_always_tests_latest_operating_systems.data_types import SafeChange
 from ensure_ci_always_tests_latest_operating_systems.errors import GitHubApiError
 from ensure_ci_always_tests_latest_operating_systems.markers import (CLOSED_BY_BOT_MARKER, COMMIT_TRAILER,
                                                                      PULL_REQUEST_MARKER, change_list_marker)
@@ -351,6 +352,64 @@ class RebuildChangeTests(unittest.TestCase):
         for listed in (ios_leg, runner_label):
             with self.subTest(kind=listed['kind']):
                 self.assertIsNone(module.rebuild_change(self.pinned, listed))
+
+    def runner_change(self, pin_job: str = 'device_tests_android', old: str = 'ubuntu-24.04', new: str = 'ubuntu-26.04', **overrides):
+        file = '.github/workflows/device-tests.yml'
+        listed = change('runner-label:%s:%s' % (file, pin_job), new, old, 'replace-runner-label', 'runner-labels', file)
+        listed.update(overrides)
+        return listed
+
+    def test_a_runner_label_move_is_rebuilt_on_the_line_main_has_now(self) -> None:
+        text = fixture('repo/device-tests.yml').decode('utf-8')
+        pinned = read_with(device_tests='# one line more above\n' + text)
+        rebuilt = module.rebuild_change(pinned, self.runner_change('device_tests_android_runtime'))
+        self.assertEqual((rebuilt.line, rebuilt.old, rebuilt.new, rebuilt.kind, rebuilt.family),
+                         (379 + 1, 'ubuntu-24.04', 'ubuntu-26.04', 'replace-runner-label', 'runner-labels'))
+        self.assertEqual(rebuilt.source, 'carried-forward-from-the-open-pull-request')
+        self.assertEqual(rebuilt.description, 'Move the job device_tests_android_runtime from ubuntu-24.04 to ubuntu-26.04')
+        self.assertEqual(SafeChange.from_json(rebuilt.to_json()), rebuilt)
+
+    def test_an_entry_whose_family_does_not_match_its_kind_is_dropped(self) -> None:
+        shared_env = '.github/workflows/shared.env'
+        xcode = change('env:CommunityToolkitLibrary_Xcode_Version', '27.3', '27.2', 'set-xcode-version', 'xcode', shared_env)
+        api_level = change('android-leg:google_apis_ps16k:37', '37.3', '37.2')
+        runner = self.runner_change()
+        for correct in (xcode, api_level, runner):
+            self.assertIsNotNone(module.rebuild_change(self.pinned, correct))
+            for wrong_family in ('xcode', 'android', 'runner-labels', 'older-ios-legs'):
+                if wrong_family == correct['family']:
+                    continue
+                with self.subTest(kind=correct['kind'], family=wrong_family):
+                    self.assertIsNone(module.rebuild_change(self.pinned, dict(correct, family=wrong_family)))
+
+    def test_a_runner_label_move_that_no_longer_applies_is_dropped(self) -> None:
+        file = '.github/workflows/device-tests.yml'
+        sign_text = fixture('repo/dotnet-build.yml').decode('utf-8') + '\n    sign:\n        runs-on: windows-2025\n'
+        sign_pin = 'runner-label:.github/workflows/dotnet-build.yml:sign'
+        main_already_on_ubuntu_26_04 = read_with(device_tests=fixture('repo/device-tests.yml').decode('utf-8').replace(
+            'runs-on: ubuntu-24.04', 'runs-on: ubuntu-26.04'))
+        cases = {
+            'main already has the new label': (main_already_on_ubuntu_26_04, self.runner_change()),
+            'old differs from main': (self.pinned, self.runner_change(old='ubuntu-20.04')),
+            'the job is gone': (self.pinned, self.runner_change('device_tests_gone')),
+            'a job that is not movable': (read_with(dotnet_build=sign_text),
+                                          change(sign_pin, 'windows-2028', 'windows-2025', 'replace-runner-label', 'runner-labels',
+                                                 '.github/workflows/dotnet-build.yml')),
+            'the xcode family': (self.pinned, self.runner_change(family='xcode')),
+            'a pin of another file': (self.pinned, self.runner_change(file='.github/workflows/dotnet-build.yml')),
+            'a malformed pin': (self.pinned, self.runner_change(pin='runner-label:device_tests_android')),
+            'an apple pin': (self.pinned, self.runner_change(pin='apple-label:%s:device_tests_ios' % file)),
+            'an equal label': (self.pinned, self.runner_change(new='ubuntu-24.04')),
+            'a lower label': (self.pinned, self.runner_change(old='ubuntu-26.04', new='ubuntu-24.04')),
+            'another family': (self.pinned, self.runner_change(new='windows-2028')),
+            'an arm label': (self.pinned, self.runner_change(new='ubuntu-26.04-arm')),
+            'ubuntu-latest': (self.pinned, self.runner_change(new='ubuntu-latest')),
+            'an xcode label': (self.pinned, self.runner_change(new='xcode-28')),
+            'no old label': (self.pinned, self.runner_change(old='')),
+        }
+        for name, (pinned, listed) in cases.items():
+            with self.subTest(name):
+                self.assertIsNone(module.rebuild_change(pinned, listed))
 
     def test_a_pin_whose_major_is_a_digit_that_int_rejects_is_dropped(self) -> None:
         listed = change('android-leg:google_apis_ps16k:\u00b3', '37.3', '37.2')

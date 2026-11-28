@@ -4,12 +4,12 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-from . import markers
+from . import android_levels, markers, runner_labels, xcode_changes
 from .data_types import PULL_REQUEST_CHANGE_KINDS, PinnedVersions, SafeChange, ThingToCheck
 from .errors import GitHubApiError
 from .line_editor import android_leg_lines
 from .markdown_text import markdown_code
-from .pinned_versions import XCODE_VERSION_KEYS
+from .pinned_versions import XCODE_VERSION_KEYS, is_a_newer_label_of_the_same_family
 from .version_numbers import parse_android_level
 
 SOURCE_KEY = 'source:bump-pull-request'
@@ -167,13 +167,11 @@ def rebuild_change(pinned: PinnedVersions, change: Dict[str, Any]) -> Optional[S
         return None
     if kind in _XCODE_VERSION_KINDS and not _is_xcode_version_text(new, old):
         return None
-    rebuilders = {
-        'set-xcode-version': _rebuild_xcode_version,
-        'replace-api-level': _rebuild_api_level,
-        'insert-android-leg': _rebuild_android_leg_insert,
-    }
-    rebuild = rebuilders.get(kind) if kind in PULL_REQUEST_CHANGE_KINDS else None
-    if rebuild is None or change.get('file') not in markers.PIN_FILES:
+    family_and_rebuilder = _FAMILY_AND_REBUILDER_OF_KIND.get(kind) if kind in PULL_REQUEST_CHANGE_KINDS else None
+    if family_and_rebuilder is None or change.get('file') not in markers.PIN_FILES:
+        return None
+    family, rebuild = family_and_rebuilder
+    if change.get('family') != family:
         return None
     return rebuild(pinned, change, pin, old, new, inserted_lines)
 
@@ -253,3 +251,29 @@ def _rebuild_android_leg_insert(pinned: PinnedVersions, change: Dict[str, Any], 
     line = max(lower_legs, key=lambda leg: leg.level).entry_end if lower_legs else pinned.android_include_line
     return _carried(change, line, None, new, android_leg_lines(pinned.android_dash_prefix, new_level.text, target), pin,
                     'Add an Android leg for API %s' % new)
+
+
+def _rebuild_runner_label(pinned: PinnedVersions, change: Dict[str, Any], pin: str, old: Optional[str], new: str,
+                          inserted_lines: List[str]) -> Optional[SafeChange]:
+    """The change list comes from a body a person can edit, so only a rise of one job that device_tests needs is carried."""
+    place = runner_labels.parse_runner_label_pin(pin)
+    if place is None or place[0] != change['file'] or old is None:
+        return None
+    if not is_a_newer_label_of_the_same_family(old, new):
+        return None
+    for occurrence in pinned.ubuntu_and_windows_label_occurrences:
+        if occurrence.is_movable and (occurrence.file, occurrence.job_id) == place:
+            if occurrence.label != old:
+                return None
+            return _carried(change, occurrence.line, old, new, [], pin,
+                            runner_labels.describe_runner_label_move(occurrence.job_id, old, new))
+    return None
+
+
+# A body a person edited could pair a kind with another family and slip past that family's freeze.
+_FAMILY_AND_REBUILDER_OF_KIND = {
+    'set-xcode-version': (xcode_changes.FAMILY, _rebuild_xcode_version),
+    'replace-api-level': (android_levels.FAMILY, _rebuild_api_level),
+    'insert-android-leg': (android_levels.FAMILY, _rebuild_android_leg_insert),
+    'replace-runner-label': (runner_labels.RUNNER_LABELS_FAMILY, _rebuild_runner_label),
+}

@@ -16,6 +16,7 @@ from ensure_ci_always_tests_latest_operating_systems.change_plan import (
     CLOSE, LEAVE_ALONE, NOTHING, OPEN_OR_UPDATE, Plan, build_plan, compute_change_list_key, write_plan_files)
 from ensure_ci_always_tests_latest_operating_systems.change_validator import validate_changes
 from ensure_ci_always_tests_latest_operating_systems.line_editor import apply_changes_to_texts
+from ensure_ci_always_tests_latest_operating_systems.pinned_versions import find_job_block, split_into_lines
 
 from .helpers import fixture
 from .test_android_levels import TODAY_RELEASED_FOUR_KB, TODAY_RELEASED_SIXTEEN_KB, android_json
@@ -27,6 +28,8 @@ BASE_SHA = '0123456789abcdef0123456789abcdef01234567'
 BOT_BRANCH = 'automation/ensure-ci-always-tests-latest-operating-systems'
 RUN_URL = 'https://github.com/CommunityToolkit/Maui/actions/runs/42'
 BANNED_JARGON_WORD = 'fl' + 'ag'
+RUNNER_PIN_PREFIX = 'runner-label:.github/workflows/device-tests.yml:'
+UBUNTU_JOBS = ('device_tests_android', 'device_tests_android_app', 'device_tests_android_runtime')
 SIXTEEN_KB_PIN = 'android-leg:google_apis_ps16k:37'
 FOUR_KB_PIN = 'android-leg:google_apis:37'
 SCRIPTS_FOLDER = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -67,12 +70,14 @@ def readme_rows_with_xcode_28() -> List[Dict[str, Any]]:
     return rows
 
 
-def todays_runner_images(with_xcode_28: bool = False) -> Dict[str, Any]:
+def todays_runner_images(with_xcode_28: bool = False, with_ubuntu_26_04: bool = True) -> Dict[str, Any]:
     rows = [row.to_json() for row in runner_labels.parse_runner_images_readme(
         fixture('runners/README-0e63d4f9d.md').decode('utf-8'))]
     states = runner_images(with_xcode_28=with_xcode_28)['rollout_states']
     if with_xcode_28:
         rows = readme_rows_with_xcode_28()
+    if not with_ubuntu_26_04:
+        rows = [row for row in rows if not row['name'].startswith('Ubuntu 26.04')]
     return {'status': 'ok', 'rows': rows, 'rollout_states': states, 'rollout_states_error': None}
 
 
@@ -88,7 +93,10 @@ def write_json(folder: str, name: str, data: Any) -> None:
 
 
 class Night:
-    """One night's inputs on disk, the way the earlier jobs leave them; every argument replaces today's value."""
+    """One night's inputs on disk, the way the earlier jobs leave them; every argument replaces today's value.
+
+    The default README has no Ubuntu 26.04 rows, so tests of the other families see no runner label move.
+    """
 
     def __init__(self, test: unittest.TestCase, android: Optional[Dict[str, Any]] = None,
                  required: Optional[Dict[str, Any]] = None, images: Optional[Dict[str, Any]] = None,
@@ -102,7 +110,7 @@ class Night:
         self.out = os.path.join(self.folder, 'plan')
         write_json(self.latest, 'android.json', android or android_json(TODAY_RELEASED_FOUR_KB, TODAY_RELEASED_SIXTEEN_KB))
         write_json(self.latest, 'required-xcode.json', required or required_xcode())
-        write_json(self.latest, 'runner-images.json', images or todays_runner_images())
+        write_json(self.latest, 'runner-images.json', images or todays_runner_images(with_ubuntu_26_04=False))
         write_json(self.latest, 'branch-rules.json', rules or branch_rules())
         labels = labels_to_inspect if labels_to_inspect is not None else ['xcode-27', 'macos-26', 'macos-15']
         write_json(self.latest, 'macos-labels-to-inspect.json', {'status': 'ok', 'labels': labels})
@@ -121,6 +129,26 @@ class Night:
         return build_plan(self.latest, self.software, self.repo, bump_state or NO_PULL_REQUEST, BASE, BASE_SHA, BOT_BRANCH,
                           reopen_rejected, RUN_URL, NOW)
 
+    def name_jobs_after_their_label(self, job_ids: List[str], label: str) -> None:
+        path = os.path.join(self.repo, '.github', 'workflows', 'device-tests.yml')
+        lines = split_into_lines(read_file(path))
+        for job_id in job_ids:
+            first, last = find_job_block(lines, job_id)
+            for number in range(first, last + 1):
+                if lines[number - 1].startswith('        name:'):
+                    lines[number - 1] = '        name: Device Tests (%s)' % label
+        with open(path, 'w', encoding='utf-8', newline='') as file:
+            file.write('\n'.join(lines) + '\n')
+
+    def replace_job_name_lines(self, job_id: str, name_lines: List[str]) -> None:
+        path = os.path.join(self.repo, '.github', 'workflows', 'device-tests.yml')
+        lines = split_into_lines(read_file(path))
+        first, last = find_job_block(lines, job_id)
+        name_number = next(number for number in range(first, last + 1) if lines[number - 1].startswith('        name:'))
+        lines[name_number - 1:name_number] = name_lines
+        with open(path, 'w', encoding='utf-8', newline='') as file:
+            file.write('\n'.join(lines) + '\n')
+
     def base_texts(self) -> Dict[str, str]:
         return {path: read_file(os.path.join(self.repo, *path.split('/'))) for path in markers.PIN_FILES}
 
@@ -138,18 +166,41 @@ def pairs(plan: Plan) -> List[Any]:
 
 
 class TodayTests(unittest.TestCase):
-    def test_today_does_nothing_and_reports_only_the_newer_ubuntu_label(self) -> None:
-        plan = Night(self).plan()
-        self.assertEqual(plan.pull_request_action, NOTHING)
-        self.assertEqual(plan.safe_changes, [])
+    def test_today_moves_the_android_emulator_jobs_to_ubuntu_26_04_and_asks_nobody(self) -> None:
+        plan = Night(self, images=todays_runner_images()).plan()
+        self.assertEqual(plan.pull_request_action, OPEN_OR_UPDATE)
+        self.assertEqual(pairs(plan), [(RUNNER_PIN_PREFIX + job, 'ubuntu-24.04', 'ubuntu-26.04') for job in UBUNTU_JOBS])
+        self.assertEqual(plan.things_to_check, [])
         self.assertEqual(plan.changes_for_a_person, [])
-        self.assertEqual(keys(plan.things_to_check), ['ubuntu-label:ubuntu-26.04'])
         self.assertEqual(plan.source_problems, [])
-        self.assertEqual(plan.change_list_key, '')
-        self.assertIsNone(plan.open_pull_request)
+        self.assertTrue(plan.change_list_key)
         self.assertEqual({name: state['state'] for name, state in plan.families.items()},
                          {'android': 'planned', 'xcode': 'planned', 'runner-labels': 'planned', 'older-ios-legs': 'planned'})
+        self.assertEqual(plan.title, '%s: ubuntu-26.04 runners' % pull_request_text.TITLE_START)
+        for job in UBUNTU_JOBS:
+            self.assertIn('- Runner of job %s (device-tests.yml): ubuntu-24.04 -> ubuntu-26.04' % job, plan.commit_message)
+
+    def test_a_night_without_ubuntu_26_04_changes_nothing(self) -> None:
+        plan = Night(self).plan()
+        self.assertEqual(plan.pull_request_action, NOTHING)
+        self.assertEqual(plan.families['runner-labels']['state'], 'planned')
+        self.assertEqual(plan.safe_changes, [])
+        self.assertEqual(plan.things_to_check, [])
+        self.assertEqual(plan.change_list_key, '')
+        self.assertIsNone(plan.open_pull_request)
         self.assertEqual(plan.title, pull_request_text.TITLE_START)
+
+    def test_the_moves_write_a_patch_that_applies_and_validates(self) -> None:
+        night = Night(self, images=todays_runner_images())
+        plan = night.plan()
+        write_plan_files(plan, night.repo, night.out)
+        patch_path = os.path.join(night.out, 'changes.patch')
+        if not GIT_IS_MISSING:
+            result = night.git_apply_check(patch_path)
+            self.assertEqual(result.returncode, 0, result.stderr)
+        head = apply_changes_to_texts(night.base_texts(), plan.safe_changes)
+        self.assertEqual(validate_changes(night.base_texts(), head), [])
+        self.assertEqual(read_file(patch_path).count('\n+        runs-on: ubuntu-26.04'), 3)
 
     def test_every_item_key_is_a_valid_marker_key(self) -> None:
         plan = Night(self).plan()
@@ -439,6 +490,255 @@ class FamilyIsolationTests(unittest.TestCase):
         self.assertEqual(plan.families['xcode']['state'], 'planned')
 
 
+def runner_move_in_the_pull_request(job: str, old: str = 'ubuntu-24.04', new: str = 'ubuntu-26.04') -> Dict[str, Any]:
+    return listed_change('runner-labels', 'replace-runner-label', '.github/workflows/device-tests.yml', RUNNER_PIN_PREFIX + job,
+                         old, new)
+
+
+def three_moves_in_the_pull_request() -> List[Dict[str, Any]]:
+    return [runner_move_in_the_pull_request(job) for job in UBUNTU_JOBS]
+
+
+def todays_images_with(extra_rows: Optional[List[Dict[str, Any]]] = None, ubuntu_24_04_badges: Optional[List[str]] = None,
+                       with_ubuntu_26_04: bool = True) -> Dict[str, Any]:
+    images = todays_runner_images(with_ubuntu_26_04=with_ubuntu_26_04)
+    for row in images['rows']:
+        if row['name'] == 'Ubuntu 24.04' and ubuntu_24_04_badges is not None:
+            row['badges'] = ubuntu_24_04_badges
+    images['rows'] = images['rows'] + (extra_rows or [])
+    return images
+
+
+def github_hosted_row(name: str, label: str, badges: Optional[List[str]] = None) -> Dict[str, Any]:
+    return {'name': name, 'arch': 'x64', 'labels': [label], 'badges': badges or [], 'rollout_state_key': None}
+
+
+class RunnerLabelMoveTests(unittest.TestCase):
+    def test_a_readme_problem_carries_the_open_pull_requests_moves_and_says_so(self) -> None:
+        night = Night(self, images={'status': 'error', 'error': 'the table moved', 'rows': [], 'rollout_states': {},
+                                    'rollout_states_error': None})
+        plan = night.plan(open_pull_request(three_moves_in_the_pull_request()))
+        self.assertEqual(len(plan.safe_changes), 3)
+        self.assertEqual(plan.families['runner-labels']['state'], 'problem')
+        self.assertIn('source:runner-images-readme', keys(plan.source_problems))
+        self.assertTrue(any('The runner-labels changes are on hold tonight' in note and 'keeps its 3 runner-labels changes' in note
+                            for note in plan.notes), plan.notes)
+        self.assertEqual(plan.pull_request_action, OPEN_OR_UPDATE)
+
+    def test_a_readme_problem_without_an_open_pull_request_makes_no_move(self) -> None:
+        night = Night(self, images={'status': 'error', 'error': 'the table moved', 'rows': [], 'rollout_states': {},
+                                    'rollout_states_error': None})
+        plan = night.plan()
+        self.assertEqual(plan.safe_changes, [])
+        self.assertTrue(any('and no pull request is open, so none were made' in note for note in plan.notes), plan.notes)
+
+    def test_a_carried_move_that_main_already_made_is_dropped_and_says_what_main_has(self) -> None:
+        night = Night(self, images={'status': 'error', 'error': 'gone', 'rows': [], 'rollout_states': {},
+                                    'rollout_states_error': None})
+        text = night.base_texts()['.github/workflows/device-tests.yml'].replace('runs-on: ubuntu-24.04', 'runs-on: ubuntu-26.04', 1)
+        night.write_repo_file('device-tests.yml', text.encode('utf-8'))
+        plan = night.plan(open_pull_request([runner_move_in_the_pull_request('device_tests_android')]))
+        dropped = [note for note in plan.notes if note.startswith('Dropped')]
+        self.assertEqual(len(dropped), 1, plan.notes)
+        self.assertIn('main now has `ubuntu-26.04`', dropped[0])
+
+    def test_rejected_moves_leave_one_note_each_and_no_item(self) -> None:
+        state = copy.deepcopy(NO_PULL_REQUEST)
+        state['rejected'] = [{'pin': RUNNER_PIN_PREFIX + job, 'new': 'ubuntu-26.04', 'pull_request': 9} for job in UBUNTU_JOBS]
+        plan = Night(self, images=todays_runner_images()).plan(state)
+        self.assertEqual(plan.safe_changes, [])
+        left_out = [note for note in plan.notes if note.startswith('Left out')]
+        self.assertEqual(len(left_out), 3, plan.notes)
+        self.assertIn('Move the job device_tests_android from ubuntu-24.04 to ubuntu-26.04', left_out[0])
+        self.assertIn('#9', left_out[0])
+        self.assertEqual(plan.things_to_check, [])
+
+    def test_a_rejected_move_of_a_deprecated_label_keeps_the_item_with_the_reason(self) -> None:
+        state = copy.deepcopy(NO_PULL_REQUEST)
+        state['rejected'] = [{'pin': RUNNER_PIN_PREFIX + job, 'new': 'ubuntu-26.04', 'pull_request': 9} for job in UBUNTU_JOBS]
+        plan = Night(self, images=todays_images_with(ubuntu_24_04_badges=['deprecated'])).plan(state)
+        self.assertEqual(keys(plan.things_to_check), ['runner-label-deprecated:ubuntu-24.04'])
+        self.assertIn("isn't moving the jobs to", plan.things_to_check[0].text)
+        self.assertIn('`reopen-rejected`', plan.things_to_check[0].text)
+
+    def test_a_planned_move_of_a_deprecated_label_leaves_no_item(self) -> None:
+        plan = Night(self, images=todays_images_with(ubuntu_24_04_badges=['deprecated'])).plan()
+        self.assertEqual(len(plan.safe_changes), 3)
+        self.assertEqual(plan.things_to_check, [])
+
+    def test_a_required_check_that_names_the_old_label_routes_the_move_to_a_person(self) -> None:
+        rules = branch_rules()
+        rules['required_checks'] = rules['required_checks'] + ['Device Tests / Device Tests (ubuntu-24.04)']
+        night = Night(self, images=todays_runner_images(), rules=rules)
+        night.name_jobs_after_their_label(UBUNTU_JOBS, 'ubuntu-24.04')
+        plan = night.plan()
+        self.assertEqual(plan.safe_changes, [])
+        self.assertEqual(len(plan.changes_for_a_person), 3)
+        self.assertTrue(all(key.startswith('required-check-rename:runner-label:') for key in keys(plan.changes_for_a_person)))
+        for person_change in plan.changes_for_a_person:
+            self.assertTrue(markers.is_valid_item_key(person_change.key), person_change.key)
+
+    def test_only_the_moved_jobs_own_name_decides_the_rename_routing(self) -> None:
+        rules = branch_rules()
+        rules['required_checks'] = rules['required_checks'] + ['Device Tests (ubuntu-24.04)']
+        night = Night(self, images=todays_runner_images(), rules=rules)
+        night.name_jobs_after_their_label(['device_tests_android'], 'ubuntu-24.04')
+        plan = night.plan()
+        self.assertEqual([change.pin for change in plan.changes_for_a_person[0].changes],
+                         [RUNNER_PIN_PREFIX + 'device_tests_android'])
+        self.assertEqual(len(plan.changes_for_a_person), 1)
+        self.assertEqual(sorted(change.pin for change in plan.safe_changes),
+                         [RUNNER_PIN_PREFIX + 'device_tests_android_app', RUNNER_PIN_PREFIX + 'device_tests_android_runtime'])
+
+    def test_a_block_scalar_job_name_that_holds_the_old_label_routes_the_move(self) -> None:
+        for indicator in ('>', '|', '>-', '|+', '>2-', '|-  # folded'):
+            with self.subTest(indicator=indicator):
+                rules = branch_rules()
+                rules['required_checks'] = rules['required_checks'] + ['Device Tests (ubuntu-24.04)']
+                night = Night(self, images=todays_runner_images(), rules=rules)
+                night.replace_job_name_lines('device_tests_android',
+                                             ['        name: ' + indicator, '          Device Tests (ubuntu-24.04)'])
+                plan = night.plan()
+                self.assertEqual([change.pin for change in plan.changes_for_a_person[0].changes],
+                                 [RUNNER_PIN_PREFIX + 'device_tests_android'])
+                self.assertEqual(len(plan.safe_changes), 2)
+
+    def test_a_continued_job_name_that_holds_the_old_label_routes_the_move(self) -> None:
+        forms = {
+            'empty value': ['        name:', '          Device Tests (ubuntu-24.04)'],
+            'plain continued': ['        name: Device Tests', '          (ubuntu-24.04)'],
+            'quoted continued': ['        name: "Device Tests', '          (ubuntu-24.04)"'],
+        }
+        for form, name_lines in forms.items():
+            with self.subTest(form=form):
+                rules = branch_rules()
+                rules['required_checks'] = rules['required_checks'] + ['Device Tests (ubuntu-24.04)']
+                night = Night(self, images=todays_runner_images(), rules=rules)
+                night.replace_job_name_lines('device_tests_android', name_lines)
+                plan = night.plan()
+                self.assertEqual([change.pin for change in plan.changes_for_a_person[0].changes],
+                                 [RUNNER_PIN_PREFIX + 'device_tests_android'])
+                self.assertEqual(len(plan.safe_changes), 2)
+
+    def test_a_label_in_a_nested_key_below_a_one_line_job_name_does_not_route_the_move(self) -> None:
+        rules = branch_rules()
+        rules['required_checks'] = rules['required_checks'] + ['Device Tests (ubuntu-24.04)']
+        night = Night(self, images=todays_runner_images(), rules=rules)
+        night.replace_job_name_lines('device_tests_android',
+                                     ['        name: Device Tests', '        env:', '          RUNNER: ubuntu-24.04'])
+        plan = night.plan()
+        self.assertEqual(plan.changes_for_a_person, [])
+        self.assertEqual(len(plan.safe_changes), 3)
+
+    def test_a_body_entry_whose_family_does_not_match_its_kind_is_not_carried_forward(self) -> None:
+        rules = {'status': 'error', 'error': 'no access', 'required_checks': []}
+        xcode_pin = 'env:CommunityToolkitSample_Xcode_Version'
+        entries = [
+            ('xcode', 'set-xcode-version', '.github/workflows/shared.env', xcode_pin, '27.2', '27.3'),
+            ('android', 'replace-api-level', '.github/workflows/device-tests.yml', SIXTEEN_KB_PIN, '37.2', '37.3'),
+        ]
+        for correct_family, kind, file, pin, old, new in entries:
+            with self.subTest(kind=kind):
+                night = Night(self, images=todays_runner_images(), rules=rules)
+                right = night.plan(open_pull_request([listed_change(correct_family, kind, file, pin, old, new)]))
+                self.assertEqual([change.pin for change in right.safe_changes], [pin])
+                wrong = night.plan(open_pull_request([listed_change('runner-labels', kind, file, pin, old, new)]))
+                self.assertEqual(wrong.safe_changes, [])
+
+    def test_a_routed_move_of_a_deprecated_label_keeps_the_item(self) -> None:
+        rules = branch_rules()
+        rules['required_checks'] = rules['required_checks'] + ['Device Tests / Device Tests (ubuntu-24.04)']
+        night = Night(self, images=todays_images_with(ubuntu_24_04_badges=['deprecated']), rules=rules)
+        night.name_jobs_after_their_label(UBUNTU_JOBS, 'ubuntu-24.04')
+        plan = night.plan()
+        self.assertEqual(keys(plan.things_to_check), ['runner-label-deprecated:ubuntu-24.04'])
+
+    def test_a_required_check_of_another_job_that_names_the_old_label_does_not_stop_the_move(self) -> None:
+        rules = branch_rules()
+        rules['required_checks'] = rules['required_checks'] + ['Build Library (windows-2025)']
+        images = todays_images_with([github_hosted_row('Windows Server 2028', 'windows-2028')])
+        plan = Night(self, images=images, rules=rules).plan()
+        self.assertIn((RUNNER_PIN_PREFIX + 'device_tests_windows', 'windows-2025', 'windows-2028'), pairs(plan))
+        self.assertEqual(plan.changes_for_a_person, [])
+
+    def test_a_held_move_that_no_longer_moves_the_current_label_does_not_fix_the_deprecated_item(self) -> None:
+        person_commit = {'sha': 'a' * 40, 'login': 'someone', 'subject': 'fix typo'}
+        stale = [runner_move_in_the_pull_request(job, old='ubuntu-22.04', new='ubuntu-24.04') for job in UBUNTU_JOBS]
+        plan = Night(self, images=todays_images_with(ubuntu_24_04_badges=['deprecated'])).plan(
+            open_pull_request(stale, person_commits=[person_commit]))
+        self.assertEqual(plan.pull_request_action, LEAVE_ALONE)
+        self.assertIn('runner-label-deprecated:ubuntu-24.04', keys(plan.things_to_check))
+
+    def test_unreadable_branch_rules_freeze_the_family_and_carry_the_open_pull_requests_moves(self) -> None:
+        rules = {'status': 'error', 'error': 'no access', 'required_checks': []}
+        night = Night(self, images=todays_runner_images(), rules=rules)
+        without_a_pull_request = night.plan()
+        self.assertEqual(without_a_pull_request.safe_changes, [])
+        self.assertEqual(without_a_pull_request.families['runner-labels']['state'], 'frozen')
+        self.assertEqual(without_a_pull_request.pull_request_action, NOTHING)
+        carried = night.plan(open_pull_request(three_moves_in_the_pull_request()))
+        self.assertEqual(len(carried.safe_changes), 3)
+
+    def test_the_moves_and_an_android_rise_share_one_pull_request_and_one_title(self) -> None:
+        plan = Night(self, android=android_with_sixteen_kb_37_3(), images=todays_runner_images()).plan()
+        self.assertEqual(len(plan.safe_changes), 4)
+        self.assertEqual(plan.title, '%s: Android API 37.3 (16 KB), ubuntu-26.04 runners' % pull_request_text.TITLE_START)
+        self.assertEqual(plan.pull_request_action, OPEN_OR_UPDATE)
+
+    def test_a_pull_request_with_a_person_commit_lists_the_moves_as_not_pushed_and_keeps_the_deprecated_item(self) -> None:
+        person_commit = {'sha': 'a' * 40, 'login': 'someone', 'subject': 'fix typo'}
+        state = open_pull_request([], person_commits=[person_commit])
+        plan = Night(self, images=todays_images_with(ubuntu_24_04_badges=['deprecated'])).plan(state)
+        self.assertEqual(plan.pull_request_action, LEAVE_ALONE)
+        self.assertEqual(plan.safe_changes, [])
+        self.assertTrue(any('pushed nothing' in note and 'Move the job device_tests_android' in note for note in plan.notes),
+                        plan.notes)
+        self.assertEqual(keys(plan.things_to_check), ['runner-label-deprecated:ubuntu-24.04'])
+
+    def test_a_person_commit_on_a_pull_request_that_holds_the_moves_adds_no_deprecated_item(self) -> None:
+        person_commit = {'sha': 'a' * 40, 'login': 'someone', 'subject': 'fix typo'}
+        state = open_pull_request(three_moves_in_the_pull_request(), person_commits=[person_commit])
+        plan = Night(self, images=todays_images_with(ubuntu_24_04_badges=['deprecated'])).plan(state)
+        self.assertEqual(plan.pull_request_action, LEAVE_ALONE)
+        self.assertEqual(plan.safe_changes, [])
+        self.assertEqual(keys(plan.things_to_check), [])
+
+    def test_a_held_move_off_a_deprecated_label_adds_no_item_even_when_tonights_target_is_newer(self) -> None:
+        person_commit = {'sha': 'a' * 40, 'login': 'someone', 'subject': 'fix typo'}
+        state = open_pull_request(three_moves_in_the_pull_request(), person_commits=[person_commit])
+        images = todays_images_with([github_hosted_row('Ubuntu 28.04', 'ubuntu-28.04')], ubuntu_24_04_badges=['deprecated'])
+        plan = Night(self, images=images).plan(state)
+        self.assertEqual(plan.pull_request_action, LEAVE_ALONE)
+        self.assertEqual(keys(plan.things_to_check), [])
+
+    def test_a_pull_request_with_failed_checks_keeps_its_moves_and_shows_only_the_failed_checks_item(self) -> None:
+        state = open_pull_request(three_moves_in_the_pull_request())
+        state['open']['checks_failed'] = True
+        state['things_to_check'] = [{'key': 'pull-request-checks-failed:5', 'text': 'checks failed'}]
+        plan = Night(self, images=todays_images_with(ubuntu_24_04_badges=['deprecated'])).plan(state)
+        self.assertEqual(plan.pull_request_action, OPEN_OR_UPDATE)
+        self.assertEqual(len(plan.safe_changes), 3)
+        self.assertEqual(keys(plan.things_to_check), ['pull-request-checks-failed:5'])
+
+    def test_a_newer_ga_ubuntu_moves_the_plan_to_it_and_does_not_carry_the_old_target(self) -> None:
+        images = todays_images_with([github_hosted_row('Ubuntu 28.04', 'ubuntu-28.04')])
+        plan = Night(self, images=images).plan(open_pull_request(three_moves_in_the_pull_request()))
+        self.assertEqual({new for _, _, new in pairs(plan)}, {'ubuntu-28.04'})
+        self.assertEqual(len(plan.safe_changes), 3)
+
+    def test_a_ga_windows_server_2028_moves_the_windows_job(self) -> None:
+        images = todays_images_with([github_hosted_row('Windows Server 2028', 'windows-2028')])
+        plan = Night(self, images=images).plan()
+        self.assertIn((RUNNER_PIN_PREFIX + 'device_tests_windows', 'windows-2025', 'windows-2028'), pairs(plan))
+        self.assertEqual(plan.things_to_check, [])
+
+    def test_a_beta_ubuntu_above_the_ga_one_moves_to_the_ga_one_and_adds_a_note(self) -> None:
+        images = todays_images_with([github_hosted_row('Ubuntu 28.04', 'ubuntu-28.04', ['beta'])])
+        plan = Night(self, images=images).plan()
+        self.assertEqual({new for _, _, new in pairs(plan)}, {'ubuntu-26.04'})
+        self.assertTrue(any('`ubuntu-28.04` (`beta`)' in note for note in plan.notes), plan.notes)
+
+
 class RequiredCheckRoutingTests(unittest.TestCase):
     def rules_requiring_android_37_2(self) -> Dict[str, Any]:
         rules = branch_rules()
@@ -492,7 +792,7 @@ class RequiredCheckRoutingTests(unittest.TestCase):
         old_image = listing('xcode-27-20261104')
         old_image['runtimes'].append({'platform': 'iOS', 'version': '27.3', 'name': 'iOS 27.3', 'identifier': 'x',
                                       'available': True})
-        night = Night(self, required=required_xcode('28.0', '28.0'), images=todays_runner_images(with_xcode_28=True),
+        night = Night(self, required=required_xcode('28.0', '28.0'), images=todays_runner_images(with_xcode_28=True, with_ubuntu_26_04=False),
                       software_lists=listings(**{'xcode-27': old_image, 'xcode-28': xcode_28_listing()}),
                       labels_to_inspect=['xcode-27', 'xcode-28', 'macos-26', 'macos-15'])
         plan = night.plan()
@@ -591,7 +891,8 @@ class WritePlanFilesTests(unittest.TestCase):
         plan = night.plan()
         write_plan_files(plan, night.repo, night.out)
         summary = read_file(os.path.join(night.out, 'summary.md'))
-        for text in ('Pull request action: `open-or-update`', '| android | planned |', 'ubuntu-label:ubuntu-26.04',
+        for text in ('Pull request action: `open-or-update`', '| android | planned |',
+                     '| `Runner of job device_tests_android` | `device-tests.yml` | `ubuntu-24.04` | `ubuntu-26.04` |',
                      '<details><summary>changes.patch</summary>', '<details><summary>Pull request body</summary>'):
             self.assertIn(text, summary)
 

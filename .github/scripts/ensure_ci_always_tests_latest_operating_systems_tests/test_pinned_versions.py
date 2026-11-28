@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 
 from ensure_ci_always_tests_latest_operating_systems import pinned_versions as pv
-from ensure_ci_always_tests_latest_operating_systems.data_types import PinnedVersions
+from ensure_ci_always_tests_latest_operating_systems.data_types import PinnedVersions, RunnerLabelOccurrence
 from ensure_ci_always_tests_latest_operating_systems.errors import PinnedVersionsFormatError
 
 from .helpers import fixture
@@ -176,6 +176,158 @@ class ErrorTests(unittest.TestCase):
                                      '                        install-runtime: maybe\n'
                                      '                    -   ios-version: \'17.5\'')
         self.assert_unreadable('install-runtime', device_tests=device_tests)
+
+
+DEVICE_TESTS_PATH = pv.DEVICE_TESTS_FILE
+DOTNET_BUILD_PATH = pv.DOTNET_BUILD_FILE
+TODAYS_MOVABLE_LINES = [
+    RunnerLabelOccurrence(DEVICE_TESTS_PATH, 73, 'device_tests_android', 'ubuntu-24.04', True),
+    RunnerLabelOccurrence(DEVICE_TESTS_PATH, 264, 'device_tests_android_app', 'ubuntu-24.04', True),
+    RunnerLabelOccurrence(DEVICE_TESTS_PATH, 379, 'device_tests_android_runtime', 'ubuntu-24.04', True),
+    RunnerLabelOccurrence(DEVICE_TESTS_PATH, 1054, 'device_tests_windows', 'windows-2025', True)]
+
+
+def occurrences_of(pinned: PinnedVersions):
+    return pinned.ubuntu_and_windows_label_occurrences
+
+
+class RunnerLabelOccurrenceTests(unittest.TestCase):
+    def test_the_fixture_has_exactly_four_movable_occurrences(self) -> None:
+        self.assertEqual(occurrences_of(read_with()), TODAYS_MOVABLE_LINES)
+
+    def test_a_trailing_comment_makes_a_line_unmovable_but_still_an_occurrence(self) -> None:
+        text = replaced_once(repo_texts()[0], '        runs-on: windows-2025\n', '        runs-on: windows-2025 # why\n')
+        self.assertEqual(occurrences_of(read_with(device_tests=text))[-1],
+                         RunnerLabelOccurrence(DEVICE_TESTS_PATH, 1054, 'device_tests_windows', 'windows-2025', False))
+
+    def test_a_quoted_label_is_unmovable(self) -> None:
+        text = replaced_once(repo_texts()[0], '        runs-on: windows-2025\n', "        runs-on: 'windows-2025'\n")
+        self.assertFalse(occurrences_of(read_with(device_tests=text))[-1].is_movable)
+
+    def test_a_runner_value_of_a_matrix_is_unmovable_and_not_an_error(self) -> None:
+        text = (repo_texts()[0] + '\n    other:\n        runs-on: ubuntu-latest\n        strategy:\n            matrix:\n'
+                '                include:\n                    -   runner: ubuntu-22.04\n')
+        occurrence = occurrences_of(read_with(device_tests=text))[-1]
+        self.assertEqual((occurrence.label, occurrence.job_id, occurrence.is_movable), ('ubuntu-22.04', 'other', False))
+
+    def test_an_os_list_of_dotnet_build_is_unmovable(self) -> None:
+        text = replaced_once(repo_texts()[1], 'os: [ windows-latest, xcode-27 ]\n        outputs:',
+                             'os: [ windows-2025, xcode-27 ]\n        outputs:')
+        occurrence = occurrences_of(read_with(dotnet_build=text))[-1]
+        self.assertEqual((occurrence.file, occurrence.job_id, occurrence.label, occurrence.is_movable),
+                         (DOTNET_BUILD_PATH, 'build_library', 'windows-2025', False))
+
+    def test_a_job_that_device_tests_does_not_need_is_unmovable(self) -> None:
+        text = replaced_once(repo_texts()[0], 'device_tests_android, device_tests_android_app, device_tests_android_runtime, ',
+                             'device_tests_android, device_tests_android_runtime, ')
+        movable = [occurrence.job_id for occurrence in occurrences_of(read_with(device_tests=text)) if occurrence.is_movable]
+        self.assertEqual(movable, ['device_tests_android', 'device_tests_android_runtime', 'device_tests_windows'])
+        self.assertEqual(len(occurrences_of(read_with(device_tests=text))), 4)
+
+    def test_a_sign_job_of_dotnet_build_is_never_movable(self) -> None:
+        text = repo_texts()[1] + '\n    sign:\n        runs-on: windows-2025\n'
+        occurrence = occurrences_of(read_with(dotnet_build=text))[-1]
+        self.assertEqual((occurrence.job_id, occurrence.is_movable), ('sign', False))
+
+    def test_values_that_are_not_labels_are_no_occurrences(self) -> None:
+        text = repo_texts()[0]
+        text = replaced_once(text, '        runs-on: windows-2025\n', '        runs-on: ${{ matrix.os }}\n        # runs-on: ubuntu-24.04\n')
+        text += '\n    extra:\n        runs-on: ubuntu-latest\n'
+        text += '    extra2:\n        runs-on: ubuntu-24.04-arm\n    extra3:\n        runs-on: windows-2025-vs2026\n    extra4:\n        runs-on: windows-11-arm\n'
+        self.assertEqual([occurrence.label for occurrence in occurrences_of(read_with(device_tests=text))], ['ubuntu-24.04'] * 3)
+
+    def test_a_workflow_call_key_under_on_is_never_a_job(self) -> None:
+        text = replaced_once(repo_texts()[0], '    workflow_call:\n', '    workflow_call:\n        runs-on: ubuntu-22.04\n')
+        first = occurrences_of(read_with(device_tests=text))[0]
+        self.assertEqual((first.label, first.job_id, first.is_movable), ('ubuntu-22.04', '', False))
+
+    def test_a_top_level_key_after_the_jobs_clears_the_job_id(self) -> None:
+        text = repo_texts()[0] + '\nother:\n    inner:\n        runs-on: ubuntu-22.04\n'
+        last = occurrences_of(read_with(device_tests=text))[-1]
+        self.assertEqual((last.label, last.job_id, last.is_movable), ('ubuntu-22.04', '', False))
+
+    def test_a_job_header_with_a_comment_ends_the_job_above_it(self) -> None:
+        text = replaced_once(repo_texts()[0], '    device_tests_windows:\n',
+                             '    extra_job: # not needed by device_tests\n        runs-on: ubuntu-24.04\n    device_tests_windows:\n')
+        extra = [occurrence for occurrence in occurrences_of(read_with(device_tests=text)) if occurrence.label == 'ubuntu-24.04'][-1]
+        self.assertEqual((extra.job_id, extra.is_movable), ('', False))
+        self.assertEqual(sorted(pv.read_movable_runs_on_lines(text)), [73, 264, 379, 1056])
+
+    def test_a_runs_on_line_nested_deeper_than_the_job_level_is_unmovable(self) -> None:
+        text = replaced_once(repo_texts()[0], '        runs-on: windows-2025\n',
+                             '        runs-on: ${{ matrix.runner }}\n        strategy:\n            runs-on: ubuntu-24.04\n')
+        nested = occurrences_of(read_with(device_tests=text))[-1]
+        self.assertEqual((nested.job_id, nested.label, nested.is_movable), ('device_tests_windows', 'ubuntu-24.04', False))
+
+    def test_a_needs_line_nested_deeper_than_the_job_level_is_ignored(self) -> None:
+        text = repo_texts()[0]
+        needs = [line for line in text.split('\n') if line.startswith('        needs: [ device_tests_android,')][0]
+        nested = text.replace(needs, needs + '\n            needs: [ nope ]')
+        self.assertEqual(pv.read_jobs_that_device_tests_needs(pv.split_into_lines(nested)),
+                         pv.read_jobs_that_device_tests_needs(pv.split_into_lines(text)))
+
+    def test_a_label_before_jobs_has_no_job_id(self) -> None:
+        text = 'runs-on: ubuntu-22.04\n' + repo_texts()[0]
+        first = occurrences_of(read_with(device_tests=text))[0]
+        self.assertEqual((first.job_id, first.is_movable), ('', False))
+
+    def test_the_read_movable_lines_are_the_four_fixture_lines(self) -> None:
+        self.assertEqual(sorted(pv.read_movable_runs_on_lines(repo_texts()[0])), [73, 264, 379, 1054])
+
+    def test_the_json_round_trip_keeps_the_occurrences_and_an_old_file_has_none(self) -> None:
+        pinned = read_with()
+        self.assertEqual(PinnedVersions.from_json(pinned.to_json()).ubuntu_and_windows_label_occurrences, TODAYS_MOVABLE_LINES)
+        old = pinned.to_json()
+        del old['ubuntu_and_windows_label_occurrences']
+        self.assertEqual(PinnedVersions.from_json(old).ubuntu_and_windows_label_occurrences, [])
+
+    def assert_unreadable(self, fragment: str, device_tests: str) -> None:
+        with self.assertRaises(PinnedVersionsFormatError) as caught:
+            read_with(device_tests=device_tests)
+        self.assertIn(fragment, str(caught.exception))
+        self.assertNotIn('\n', str(caught.exception))
+
+    def test_a_workflow_with_no_device_tests_job_is_unreadable(self) -> None:
+        self.assert_unreadable("no job 'device_tests'", replaced_once(repo_texts()[0], '    device_tests:\n', '    device_tests_x:\n'))
+
+    def test_zero_or_two_needs_lines_are_unreadable(self) -> None:
+        text = repo_texts()[0]
+        needs = [line for line in text.split('\n') if line.startswith('        needs: [ device_tests_android,')][0]
+        self.assert_unreadable('expected one needs', text.replace(needs, '        needs: device_tests_android'))
+        self.assert_unreadable('found 2', text.replace(needs, needs + '\n' + needs))
+
+    def test_a_needed_job_that_does_not_exist_is_unreadable(self) -> None:
+        self.assert_unreadable("no job 'nope'", replaced_once(repo_texts()[0], 'device_tests_maccatalyst, device_tests_windows ]',
+                                                              'device_tests_maccatalyst, nope, device_tests_windows ]'))
+
+    def test_a_needs_entry_that_is_not_a_job_id_is_unreadable(self) -> None:
+        self.assert_unreadable('is not a job id', replaced_once(repo_texts()[0], 'device_tests_maccatalyst, device_tests_windows ]',
+                                                                'device_tests_maccatalyst, a/b, device_tests_windows ]'))
+
+    def test_two_movable_runs_on_lines_in_one_needed_job_are_unreadable(self) -> None:
+        text = replaced_once(repo_texts()[0], '        runs-on: windows-2025\n', '        runs-on: windows-2025\n        runs-on: windows-2025\n')
+        self.assert_unreadable('at most one runs-on line', text)
+
+
+class ParseUbuntuOrWindowsLabelTests(unittest.TestCase):
+    def test_labels_parse_to_a_family_and_a_number(self) -> None:
+        self.assertEqual(pv.parse_ubuntu_or_windows_label('ubuntu-26.04'), ('ubuntu', (26, 4)))
+        self.assertEqual(pv.parse_ubuntu_or_windows_label('windows-2025'), ('windows', (2025,)))
+
+    def test_everything_else_is_none(self) -> None:
+        for label in ('ubuntu-26.04-arm', 'ubuntu-latest', 'windows-11-arm', 'xcode-27', 'macos-15', 'ubuntu-\u0662\u0666.04',
+                      'windows-\uff12\uff10\uff12\uff15', 'windows-2025-vs2026', ''):
+            with self.subTest(label):
+                self.assertIsNone(pv.parse_ubuntu_or_windows_label(label))
+
+    def test_only_a_rise_within_a_family_is_newer(self) -> None:
+        self.assertTrue(pv.is_a_newer_label_of_the_same_family('ubuntu-24.04', 'ubuntu-26.04'))
+        self.assertTrue(pv.is_a_newer_label_of_the_same_family('windows-2025', 'windows-2028'))
+        for old, new in (('ubuntu-26.04', 'ubuntu-26.4'), ('ubuntu-26.04', 'ubuntu-26.04'), ('ubuntu-26.04', 'ubuntu-24.04'),
+                         ('ubuntu-24.04', 'windows-2028'), ('ubuntu-24.04', 'ubuntu-26.04-arm'), ('xcode-27', 'xcode-28'),
+                         ('macos-15', 'macos-26'), ('ubuntu-24.04', 'ubuntu-latest')):
+            with self.subTest((old, new)):
+                self.assertFalse(pv.is_a_newer_label_of_the_same_family(old, new))
 
 
 class HelperTests(unittest.TestCase):

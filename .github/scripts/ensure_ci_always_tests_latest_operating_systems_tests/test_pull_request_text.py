@@ -43,10 +43,46 @@ def new_four_kb_leg() -> SafeChange:
                       description='Add a 4 KB Android leg for API 38.0', source='android-system-images')
 
 
+def runner_move(job: str = 'device_tests_android', old: str = 'ubuntu-24.04', new: str = 'ubuntu-26.04') -> SafeChange:
+    return SafeChange(family='runner-labels', kind='replace-runner-label', file=DEVICE_TESTS, line=73, old=old, new=new,
+                      inserted_lines=[], pin='runner-label:%s:%s' % (DEVICE_TESTS, job),
+                      description='Move the job %s from %s to %s' % (job, old, new), source='runner-images-readme')
+
+
 def plan_with(changes: List[SafeChange], notes: Optional[List[str]] = None, **extra: Any) -> Plan:
     return Plan(status='ok', run_url=RUN_URL, base='main', base_sha='a' * 40,
                 bot_branch='automation/ensure-ci-always-tests-latest-operating-systems', safe_changes=changes,
                 notes=notes or [], **extra)
+
+
+class RunnerLabelTextTests(unittest.TestCase):
+    MOVES = [runner_move('device_tests_android'), runner_move('device_tests_android_app'), runner_move('device_tests_android_runtime')]
+
+    def test_the_pin_names_the_job(self) -> None:
+        self.assertEqual(describe_pin(runner_move()), 'Runner of job device_tests_android')
+
+    def test_three_moves_make_one_title_part(self) -> None:
+        self.assertEqual(render_title(plan_with(self.MOVES)), TITLE_START + ': ubuntu-26.04 runners')
+
+    def test_the_title_of_a_mixed_night_follows_the_family_order(self) -> None:
+        plan = plan_with([sixteen_kb_change(), sample_xcode_change()] + self.MOVES)
+        self.assertEqual(render_title(plan), TITLE_START + ': Android API 37.3 (16 KB), Xcode 27.3, ubuntu-26.04 runners')
+
+    def test_a_title_with_both_ubuntu_and_windows_moves_is_cut_at_120(self) -> None:
+        plan = plan_with([sixteen_kb_change(), new_four_kb_leg(), sample_xcode_change(), runner_move(),
+                          runner_move('device_tests_windows', 'windows-2025', 'windows-2028')])
+        title = render_title(plan)
+        self.assertEqual(len(title), MAX_TITLE)
+        self.assertTrue(title.endswith('...'))
+
+    def test_the_commit_line_names_the_job_the_file_and_both_labels(self) -> None:
+        self.assertIn('- Runner of job device_tests_android (device-tests.yml): ubuntu-24.04 -> ubuntu-26.04',
+                      render_commit_message(plan_with([runner_move()])))
+
+    def test_the_table_row_links_the_runner_images_readme(self) -> None:
+        body = render_pull_request_body(plan_with([runner_move()]))
+        self.assertIn('| `Runner of job device_tests_android` | `device-tests.yml` | `ubuntu-24.04` | `ubuntu-26.04` | '
+                      '[runner images README](https://github.com/actions/runner-images#available-images) |', body)
 
 
 class TitleTests(unittest.TestCase):
@@ -175,13 +211,13 @@ class RunSummaryTests(unittest.TestCase):
                          open_pull_request=5,
                          families={'android': {'state': 'planned', 'reason': ''},
                                    'xcode': {'state': 'deferred', 'reason': 'rollout in progress'}},
-                         things_to_check=[ThingToCheck('ubuntu-label:ubuntu-26.04', 'A newer label.')],
+                         things_to_check=[ThingToCheck('runner-label-deprecated:macos-15', 'A deprecated label.')],
                          source_problems=[SourceProblem('source:branch-rules', 'branch-rules', 'no access `x`', '')],
                          changes_for_a_person=[ChangeForAPerson('xcode-label:xcode-27:xcode-28', 'Move to xcode-28', 'why',
                                                                 [], [], 'patches/x.patch')])
         summary = render_run_summary(plan, changes_patch='diff text', pull_request_body='body text')
         for text in ('`open-or-update` (open pull request #5)', '| xcode | deferred | `rollout in progress` |',
-                     '`ubuntu-label:ubuntu-26.04`: A newer label.', "`source:branch-rules`: `no access 'x'`",
+                     '`runner-label-deprecated:macos-15`: A deprecated label.', "`source:branch-rules`: `no access 'x'`",
                      '`xcode-label:xcode-27:xcode-28`: `Move to xcode-28`', '- A note.', 'diff text', 'body text'):
             self.assertIn(text, summary)
 

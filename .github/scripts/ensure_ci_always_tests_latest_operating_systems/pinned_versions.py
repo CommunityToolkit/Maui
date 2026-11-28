@@ -8,9 +8,9 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass, field
-from typing import Dict, List, NamedTuple, Optional, Tuple
+from typing import Dict, List, Mapping, NamedTuple, Optional, Tuple
 
-from .data_types import AndroidLeg, AppleLabel, EnvValue, IosLeg, LabelOccurrence, PinnedVersions
+from .data_types import AndroidLeg, AppleLabel, EnvValue, IosLeg, LabelOccurrence, PinnedVersions, RunnerLabelOccurrence
 from .errors import PinnedVersionsFormatError
 from .markers import PIN_FILES
 from .version_numbers import AndroidLevel, parse_android_level
@@ -24,6 +24,9 @@ ANDROID_COVERAGE_JOB = 'device_tests_android'
 IOS_RUNTIME_JOB = 'device_tests_ios_runtime'
 DEVICE_TESTS_APPLE_JOBS = ('device_tests_ios', 'device_tests_ios_app', 'device_tests_maccatalyst')
 DOTNET_BUILD_APPLE_JOBS = ('build_sample', 'build_library')
+
+# Its check is required and fails when any job it needs fails, so CI judges a runner label move before it merges.
+REQUIRED_DEVICE_TESTS_JOB = 'device_tests'
 
 DEFAULT_ANDROID_TARGET = 'google_apis'
 SIXTEEN_KB_TARGET = 'google_apis_ps16k'
@@ -44,13 +47,23 @@ _APPLE_LABEL = re.compile(r'(?:xcode|macos)-\d+', re.ASCII)
 _RUNS_ON_VALUE = re.compile(r'^\s*runs-on:[ \t]*(.+?)\s*$')
 _RUNNER_VALUE = re.compile(r'^\s*(?:-\s+)?runner:[ \t]*(.+?)\s*$')
 _OS_FLOW_LIST = re.compile(r'^\s*(?:-\s+)?os:[ \t]*\[(.*)\]\s*(?:#.*)?$')
+_UBUNTU_LABEL = re.compile(r'ubuntu-(\d+)\.(\d+)', re.ASCII)
+_WINDOWS_LABEL = re.compile(r'windows-(\d{4})', re.ASCII)
+_DEVICE_TESTS_NEEDS = re.compile(r'^        needs:[ \t]*\[([^\]]*)\][ \t]*(?:#.*)?$', re.ASCII)
+JOB_ID = re.compile(r'[A-Za-z0-9_-]+', re.ASCII)
+MOVABLE_RUNS_ON_LINE = re.compile(r'^(?P<key>        runs-on:[ \t]*)(?P<label>[a-z0-9.-]+)(?P<rest>[ \t]*)$', re.ASCII)
 _RUNNER_FAMILIES = (
-    ('ubuntu', re.compile(r'ubuntu-\d+\.\d+', re.ASCII)),
-    ('windows', re.compile(r'windows-\d{4}', re.ASCII)),
+    ('ubuntu', _UBUNTU_LABEL),
+    ('windows', _WINDOWS_LABEL),
     ('macos', re.compile(r'macos-\d+', re.ASCII)),
     ('xcode', re.compile(r'xcode-\d+', re.ASCII)),
 )
 _UNSUPPORTED_SCALAR_START = '"[{|>&*!%@`'
+
+
+class UbuntuOrWindowsLabel(NamedTuple):
+    family: str
+    number: Tuple[int, ...]
 
 
 @dataclass
@@ -373,28 +386,91 @@ def _read_apple_label(device_tests_text: str, dotnet_build_text: str) -> AppleLa
     return AppleLabel(label=labels[0], occurrences=occurrences)
 
 
-def _read_runner_labels(*texts: str) -> Dict[str, List[str]]:
+def parse_ubuntu_or_windows_label(label: str) -> Optional[UbuntuOrWindowsLabel]:
+    for family, pattern in (('ubuntu', _UBUNTU_LABEL), ('windows', _WINDOWS_LABEL)):
+        match = pattern.fullmatch(label)
+        if match is not None:
+            return UbuntuOrWindowsLabel(family, tuple(int(part) for part in match.groups()))
+    return None
+
+
+def is_a_newer_label_of_the_same_family(old: str, new: str) -> bool:
+    old_label = parse_ubuntu_or_windows_label(old)
+    new_label = parse_ubuntu_or_windows_label(new)
+    return old_label is not None and new_label is not None and old_label.family == new_label.family \
+        and new_label.number > old_label.number
+
+
+def read_jobs_that_device_tests_needs(lines: List[str]) -> List[str]:
+    first, last = find_job_block(lines, REQUIRED_DEVICE_TESTS_JOB)
+    where = '%s job %s' % (DEVICE_TESTS_FILE, REQUIRED_DEVICE_TESTS_JOB)
+    needs_lines = [_DEVICE_TESTS_NEEDS.match(lines[number - 1]) for number in range(first, last + 1)]
+    needs_matches = [match for match in needs_lines if match is not None]
+    if len(needs_matches) != 1:
+        raise PinnedVersionsFormatError('%s: expected one needs: [ ... ] line, found %d' % (where, len(needs_matches)))
+    job_ids = [job_id.strip() for job_id in needs_matches[0].group(1).split(',')]
+    for job_id in job_ids:
+        if JOB_ID.fullmatch(job_id) is None:
+            raise PinnedVersionsFormatError('%s: %r in the needs: list is not a job id' % (where, job_id))
+        find_job_block(lines, job_id)
+    return job_ids
+
+
+def _read_runner_labels(texts_by_path: Mapping[str, str]) -> Tuple[Dict[str, List[str]], List[RunnerLabelOccurrence]]:
     families: Dict[str, List[str]] = {name: [] for name, _ in _RUNNER_FAMILIES}
+    occurrences: List[RunnerLabelOccurrence] = []
 
-    def remember(raw: str) -> None:
-        label = raw.strip().strip('\'"')
-        for name, pattern in _RUNNER_FAMILIES:
-            if pattern.fullmatch(label) is not None and label not in families[name]:
-                families[name].append(label)
-
-    for text in texts:
-        for line in split_into_lines(text):
+    for path, text in texts_by_path.items():
+        lines = split_into_lines(text)
+        needed_jobs = read_jobs_that_device_tests_needs(lines) if path == DEVICE_TESTS_FILE else []
+        job_id = ''
+        is_in_jobs = False
+        for number, line in enumerate(lines, start=1):
             if _is_comment(line):
                 continue
+            if _JOBS_HEADER.match(line):
+                is_in_jobs = True
+            elif not _is_blank(line) and _indent_of(line) == 0:
+                is_in_jobs = False
+                job_id = ''
+            job_match = _JOB_HEADER.match(line) if is_in_jobs else None
+            if job_match is not None:
+                job_id = job_match.group(1)
+            elif is_in_jobs and not _is_blank(line) and _indent_of(line) <= 4:
+                # A job header written some other way (comment, quotes, anchor) must not leave its lines credited to the job above.
+                job_id = ''
+
             match = _OS_FLOW_LIST.match(line)
             if match is not None:
-                for token in match.group(1).split(','):
-                    remember(token)
-                continue
-            match = _RUNS_ON_VALUE.match(line) or _RUNNER_VALUE.match(line)
-            if match is not None and '${{' not in match.group(1):
-                remember(_TRAILING_COMMENT.sub('', match.group(1)))
-    return families
+                tokens = match.group(1).split(',')
+            else:
+                match = _RUNS_ON_VALUE.match(line) or _RUNNER_VALUE.match(line)
+                tokens = [_TRAILING_COMMENT.sub('', match.group(1))] if match is not None and '${{' not in match.group(1) else []
+            movable_match = MOVABLE_RUNS_ON_LINE.fullmatch(line)
+            for token in tokens:
+                label = token.strip().strip('\'"')
+                for name, pattern in _RUNNER_FAMILIES:
+                    if pattern.fullmatch(label) is not None and label not in families[name]:
+                        families[name].append(label)
+                if parse_ubuntu_or_windows_label(label) is not None:
+                    is_movable = (path == DEVICE_TESTS_FILE and job_id in needed_jobs and movable_match is not None
+                                  and movable_match.group('label') == label)
+                    occurrences.append(RunnerLabelOccurrence(path, number, job_id, label, is_movable))
+
+    movable_per_job: Dict[Tuple[str, str], int] = {}
+    for occurrence in occurrences:
+        if occurrence.is_movable:
+            key = (occurrence.file, occurrence.job_id)
+            movable_per_job[key] = movable_per_job.get(key, 0) + 1
+            if movable_per_job[key] > 1:
+                raise PinnedVersionsFormatError('%s job %s: expected at most one runs-on line, found %d'
+                                                % (occurrence.file, occurrence.job_id, movable_per_job[key]))
+    return families, occurrences
+
+
+def read_movable_runs_on_lines(device_tests_text: str) -> Dict[int, RunnerLabelOccurrence]:
+    _, occurrences = _read_runner_labels({DEVICE_TESTS_FILE: device_tests_text})
+    return {occurrence.line: occurrence for occurrence in occurrences if occurrence.is_movable}
 
 
 def _read_shared_env(shared_env_text: str) -> Dict[str, EnvValue]:
@@ -420,6 +496,7 @@ def _read_shared_env(shared_env_text: str) -> Dict[str, EnvValue]:
 
 
 def read_pinned_versions_from_texts(device_tests: str, dotnet_build: str, shared_env: str) -> PinnedVersions:
+    runner_labels, label_occurrences = _read_runner_labels({DEVICE_TESTS_FILE: device_tests, DOTNET_BUILD_FILE: dotnet_build})
     android_legs, android_include_line, android_dash_prefix = read_android_legs(device_tests)
     ios_legs, ios_include_line, ios_dash_prefix = _read_ios_legs(device_tests)
     return PinnedVersions(
@@ -428,11 +505,12 @@ def read_pinned_versions_from_texts(device_tests: str, dotnet_build: str, shared
         coverage_levels=read_coverage_levels(device_tests),
         ios_legs=ios_legs,
         apple_label=_read_apple_label(device_tests, dotnet_build),
-        runner_labels=_read_runner_labels(device_tests, dotnet_build),
+        runner_labels=runner_labels,
         android_include_line=android_include_line,
         ios_include_line=ios_include_line,
         android_dash_prefix=android_dash_prefix,
         ios_dash_prefix=ios_dash_prefix,
+        ubuntu_and_windows_label_occurrences=label_occurrences,
     )
 
 

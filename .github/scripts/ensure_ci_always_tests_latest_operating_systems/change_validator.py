@@ -1,7 +1,7 @@
 """Decides whether a pull request's edit of a pin file is one the bot is allowed to make on its own.
 
 The bot checks its own plan with this, and the approval step checks the pushed commit with it again, so a hand edit or a bug in the
-editor can't get approved. Only safe changes pass; labels, iOS legs and anything else go to a person.
+editor can't get approved. Only safe changes pass; Apple labels, iOS legs and anything else go to a person.
 """
 from __future__ import annotations
 
@@ -11,11 +11,14 @@ from typing import Dict, List, Optional, Tuple
 
 from .errors import PinnedVersionsFormatError
 from .markers import PIN_FILES
-from .pinned_versions import (ANDROID_RUNTIME_JOB, DEVICE_TESTS_FILE, SHARED_ENV_FILE, SIXTEEN_KB_TARGET, XCODE_VERSION_KEYS,
-                              read_android_legs, read_coverage_levels, split_into_lines)
+from .pinned_versions import (ANDROID_RUNTIME_JOB, DEVICE_TESTS_FILE, MOVABLE_RUNS_ON_LINE, REQUIRED_DEVICE_TESTS_JOB,
+                              SHARED_ENV_FILE, SIXTEEN_KB_TARGET, XCODE_VERSION_KEYS, is_a_newer_label_of_the_same_family,
+                              parse_ubuntu_or_windows_label, read_android_legs, read_coverage_levels, read_movable_runs_on_lines,
+                              split_into_lines)
 from .version_numbers import parse_android_level
 
-MAX_CHANGED_BLOCKS = 12
+# A busy night's Android and Xcode edits plus one block per moved runs-on line; every block is still checked on its own.
+MAX_CHANGED_BLOCKS = 16
 
 _XCODE_VERSION_LINE = re.compile(r'^(%s)=\d+\.\d+$' % '|'.join(XCODE_VERSION_KEYS), re.ASCII)
 _API_LEVEL_LINE = re.compile(r"^(\s+(?:-\s+)?)api-level: '(\d+(?:\.\d+)?)'$", re.ASCII)
@@ -81,8 +84,28 @@ def _shared_env_pair_problem(base_line: str, head_line: str) -> Optional[str]:
     return None
 
 
-class _AndroidLegsOfBase:
+def _find_runner_label_move_problem(base_line: str, head_line: str) -> Optional[str]:
+    base_match = MOVABLE_RUNS_ON_LINE.fullmatch(base_line)
+    head_match = MOVABLE_RUNS_ON_LINE.fullmatch(head_line)
+    if base_match is None or head_match is None or base_match.group('key') != head_match.group('key') \
+            or base_match.group('rest') != head_match.group('rest'):
+        return 'a runs-on line may change only its label'
+    base_label = base_match.group('label')
+    head_label = head_match.group('label')
+    parsed_head = parse_ubuntu_or_windows_label(head_label)
+    if parsed_head is None:
+        return '%s is not an ubuntu-NN.NN or windows-NNNN label' % head_label
+    parsed_base = parse_ubuntu_or_windows_label(base_label)
+    if parsed_base is None or parsed_base.family != parsed_head.family:
+        return 'a runner label may not move to another family (%s to %s)' % (base_label, head_label)
+    if not is_a_newer_label_of_the_same_family(base_label, head_label):
+        return 'a runner label may only move to a newer one (%s to %s)' % (base_label, head_label)
+    return None
+
+
+class _EditableLinesOfBase:
     def __init__(self, base_text: str) -> None:
+        self.movable_runs_on_lines = read_movable_runs_on_lines(base_text)
         legs, include_line, dash_prefix = read_android_legs(base_text)
         self.api_level_lines = {leg.api_level_line: leg for leg in legs}
         self.include_line = include_line
@@ -90,8 +113,11 @@ class _AndroidLegsOfBase:
         self.insertion_points = {leg.entry_end for leg in legs} | {include_line}
 
     def replacement_problem(self, base_number: int, base_line: str, head_line: str) -> Optional[str]:
+        if base_number in self.movable_runs_on_lines:
+            return _find_runner_label_move_problem(base_line, head_line)
         if base_number not in self.api_level_lines:
-            return 'only an api-level line of an Android leg in %s may change' % ANDROID_RUNTIME_JOB
+            return 'only an api-level line of an Android leg in %s, or the runs-on label of a job that %s needs, may change' % (
+                ANDROID_RUNTIME_JOB, REQUIRED_DEVICE_TESTS_JOB)
         base_match = _API_LEVEL_LINE.match(base_line)
         head_match = _API_LEVEL_LINE.match(head_line)
         if base_match is None or head_match is None:
@@ -132,7 +158,7 @@ class _AndroidLegsOfBase:
 
 
 def _device_tests_opcode_problems(path: str, base_lines: List[str], head_lines: List[str],
-                                  opcodes: List[Tuple[str, int, int, int, int]], base: _AndroidLegsOfBase) -> List[str]:
+                                  opcodes: List[Tuple[str, int, int, int, int]], base: _EditableLinesOfBase) -> List[str]:
     problems = []
     for tag, base_start, base_end, head_start, head_end in opcodes:
         base_count = base_end - base_start
@@ -148,7 +174,7 @@ def _device_tests_opcode_problems(path: str, base_lines: List[str], head_lines: 
 
 
 def _replace_block_problems(path: str, base_lines: List[str], head_lines: List[str], base_start: int, base_end: int,
-                            head_start: int, head_end: int, base: _AndroidLegsOfBase) -> List[str]:
+                            head_start: int, head_end: int, base: _EditableLinesOfBase) -> List[str]:
     """A replaced level next to an inserted leg is one block for difflib; try each split point of the inserted lines."""
     base_count = base_end - base_start
     inserted_count = (head_end - head_start) - base_count
@@ -206,7 +232,7 @@ def validate_file_change(path: str, base_text: str, head_text: str) -> List[str]
 
     if path == DEVICE_TESTS_FILE:
         try:
-            base = _AndroidLegsOfBase(base_text)
+            base = _EditableLinesOfBase(base_text)
         except PinnedVersionsFormatError as error:
             return [_problem(path, 1, 'the file before the edit can\'t be read: %s' % error)]
         problems = _device_tests_opcode_problems(path, base_lines, head_lines, opcodes, base)

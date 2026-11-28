@@ -40,6 +40,10 @@ def clean_item_key_part(text: str) -> str:
     return _RUN_OF_HYPHENS.sub('-', cleaned).strip('-')
 
 
+def read_file_name(path: str) -> str:
+    return path.rpartition('/')[2]
+
+
 def is_valid_item_key(key: str) -> bool:
     return isinstance(key, str) and _ITEM_KEY.fullmatch(key) is not None and '--' not in key
 

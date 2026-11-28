@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 from typing import Any, List, Optional
 
-from . import markers
+from . import markers, runner_labels
 from .android_levels import SIXTEEN_KB_TARGET, SYSTEM_IMAGES_URL
 from .markdown_text import markdown_code
 
@@ -15,10 +15,6 @@ SAMPLE_XCODE_KEY = 'CommunityToolkitSample_Xcode_Version'
 LIBRARY_XCODE_KEY = 'CommunityToolkitLibrary_Xcode_Version'
 _CUT_NOTE = '\n\n_The rest of this text was cut to fit GitHub\'s size limit; the run summary has all of it._\n'
 _BACKTICK_RUN = re.compile(r'`+')
-
-
-def _file_name_of(path: str) -> str:
-    return path.rsplit('/', 1)[-1]
 
 
 def _android_pin_parts(pin: str) -> Optional[List[str]]:
@@ -43,6 +39,9 @@ def describe_pin(change: Any) -> str:
         return 'iOS %s leg' % pin.split(':', 1)[1]
     if pin.startswith('apple-label:'):
         return 'Apple job %s' % pin.rsplit(':', 1)[-1]
+    runner_label_place = runner_labels.parse_runner_label_pin(pin)
+    if runner_label_place is not None:
+        return 'Runner of job %s' % runner_label_place[1]
     return pin
 
 
@@ -71,7 +70,7 @@ def render_title(plan: Any) -> str:
 
 
 def _commit_line(change: Any) -> str:
-    where = '%s (%s)' % (describe_pin(change), _file_name_of(change.file))
+    where = '%s (%s)' % (describe_pin(change), markers.read_file_name(change.file))
     if change.old is None:
         return '- %s: added %s' % (where, change.new)
     return '- %s: %s -> %s' % (where, change.old, change.new)
@@ -102,7 +101,9 @@ _WORKLOAD_SET_AND_IMAGE_SOURCE = re.compile(r'workload-sets:([^+]+)\+macos-runne
 def _source_cell(change: Any) -> str:
     source = change.source
     if source == 'android-system-images':
-        return '[%s](%s)' % (_file_name_of(SYSTEM_IMAGES_URL), SYSTEM_IMAGES_URL)
+        return '[%s](%s)' % (markers.read_file_name(SYSTEM_IMAGES_URL), SYSTEM_IMAGES_URL)
+    if source == runner_labels.RUNNER_IMAGES_README_SOURCE:
+        return '[runner images README](%s)' % runner_labels.README_PAGE_URL
     workload_set_and_image = _WORKLOAD_SET_AND_IMAGE_SOURCE.fullmatch(source)
     if workload_set_and_image is not None:
         set_version, label, image_version = workload_set_and_image.groups()
@@ -121,7 +122,7 @@ def _change_table(plan: Any) -> List[str]:
     for change in plan.safe_changes:
         was = 'new' if change.old is None else markdown_code(change.old, in_table=True)
         rows.append('| %s | %s | %s | %s | %s |' % (
-            markdown_code(describe_pin(change), in_table=True), markdown_code(_file_name_of(change.file), in_table=True),
+            markdown_code(describe_pin(change), in_table=True), markdown_code(markers.read_file_name(change.file), in_table=True),
             was, markdown_code(change.new, in_table=True), _source_cell(change)))
     return rows
 

@@ -7,6 +7,7 @@ from unittest import mock
 from ensure_ci_always_tests_latest_operating_systems import change_validator as validator
 from ensure_ci_always_tests_latest_operating_systems import line_editor as editor
 from ensure_ci_always_tests_latest_operating_systems.markers import PIN_FILES
+from ensure_ci_always_tests_latest_operating_systems.runner_labels import make_runner_label_pin
 
 from .test_pinned_versions import replaced_once
 from .test_line_editor import (api_level_change, change, insert_android_leg, label_changes, pinned, repo_texts,
@@ -19,6 +20,14 @@ def problems_after(changes, path: str) -> List[str]:
     texts = repo_texts()
     head = editor.apply_changes_to_texts(texts, changes)
     return validator.validate_file_change(path, texts[path], head[path])
+
+
+def runner_moves():
+    pins = {73: 'device_tests_android', 264: 'device_tests_android_app', 379: 'device_tests_android_runtime',
+            1054: 'device_tests_windows'}
+    return [change('replace-runner-label', DEVICE_TESTS, line, 'windows-2025' if line == 1054 else 'ubuntu-24.04',
+                   'windows-2028' if line == 1054 else 'ubuntu-26.04', pin=make_runner_label_pin(DEVICE_TESTS, job))
+            for line, job in pins.items()]
 
 
 def problems_of_edited_text(path: str, edited: str) -> List[str]:
@@ -67,6 +76,33 @@ class AcceptedEditsTests(unittest.TestCase):
         changes = [xcode_change('CommunityToolkitSample_Xcode_Version', 21), api_level_change('36.1', '36.2', 406),
                    insert_android_leg('38.0', 'google_apis', 417)]
         self.assertEqual(validator.validate_changes(texts, editor.apply_changes_to_texts(texts, changes)), [])
+
+    def test_each_runner_label_move_alone_and_all_together(self) -> None:
+        moves = runner_moves()
+        for move in moves:
+            with self.subTest(move.line):
+                self.assertEqual(problems_after([move], DEVICE_TESTS), [])
+        self.assertEqual(problems_after(moves, DEVICE_TESTS), [])
+
+    def test_runner_label_moves_together_with_an_api_level_rise_and_an_inserted_leg(self) -> None:
+        texts = repo_texts()
+        changes = runner_moves() + [api_level_change('37.2', '37.3', 415), insert_android_leg('38.0', 'google_apis', 417)]
+        self.assertEqual(validator.validate_changes(texts, editor.apply_changes_to_texts(texts, changes)), [])
+
+    def test_a_busy_night_of_fourteen_blocks_stays_under_the_cap_of_sixteen(self) -> None:
+        texts = repo_texts()
+        changes = runner_moves() + [xcode_change('CommunityToolkitLibrary_Xcode_Version', 18),
+                                    xcode_change('CommunityToolkitSample_Xcode_Version', 21),
+                                    api_level_change('27', '27.1', 387), api_level_change('28', '28.1', 396),
+                                    api_level_change('29', '29.1', 398), api_level_change('32', '32.1', 401),
+                                    api_level_change('34', '34.1', 403), api_level_change('36.1', '36.2', 406),
+                                    api_level_change('37.0', '37.1', 411), api_level_change('37.2', '37.3', 415)]
+        self.assertEqual(validator.validate_changes(texts, editor.apply_changes_to_texts(texts, changes)), [])
+
+    def test_a_carriage_return_base_with_carriage_return_moves(self) -> None:
+        base = repo_texts()[DEVICE_TESTS].replace('\n', '\r\n')
+        head = base.replace('runs-on: ubuntu-24.04\r\n', 'runs-on: ubuntu-26.04\r\n')
+        self.assertEqual(validator.validate_file_change(DEVICE_TESTS, base, head), [])
 
     def test_carriage_returns_throughout_are_allowed_when_the_base_has_them(self) -> None:
         base = repo_texts()[SHARED_ENV].replace('\n', '\r\n')
@@ -140,9 +176,88 @@ class RejectedEditsTests(unittest.TestCase):
     def test_a_file_outside_the_list(self) -> None:
         self.assert_rejected(validator.validate_file_change('.github/workflows/other.yml', 'a\n', 'b\n'), 'not one of the files')
 
+    def edit_line(self, number: int, new_text: str, path: str = DEVICE_TESTS) -> List[str]:
+        lines = repo_texts()[path].split('\n')
+        lines[number - 1] = new_text
+        return problems_of_edited_text(path, '\n'.join(lines))
+
+    def test_a_runner_label_move_to_another_family(self) -> None:
+        self.assert_rejected(self.edit_line(73, '        runs-on: windows-2028'), 'another family')
+
+    def test_an_equal_and_a_lower_runner_label(self) -> None:
+        for label in ('ubuntu-22.04', 'ubuntu-24.4'):
+            with self.subTest(label):
+                self.assert_rejected(self.edit_line(73, '        runs-on: ' + label), 'only move to a newer one')
+
+    def test_runner_labels_that_are_not_versions(self) -> None:
+        for label in ('ubuntu-latest', 'ubuntu-26.04-arm', 'xcode-27', '${{ matrix.os }}', 'ubuntu-\u0662\u0666.04'):
+            with self.subTest(label):
+                self.assert_rejected(self.edit_line(73, '        runs-on: ' + label))
+        self.assert_rejected(self.edit_line(1054, '        runs-on: windows-2025-vs2026'))
+
+    def test_an_added_quote_comment_or_indent_on_a_runner_label(self) -> None:
+        for text in ("        runs-on: 'ubuntu-26.04'", '        runs-on: ubuntu-26.04 # new', '          runs-on: ubuntu-26.04',
+                     '        runs-on:  ubuntu-26.04', '        runs-on: ubuntu-26.04 '):
+            with self.subTest(text):
+                self.assert_rejected(self.edit_line(73, text), 'may change only its label')
+
+    def test_a_label_of_a_job_whose_header_has_a_comment_cannot_move(self) -> None:
+        base = replaced_once(repo_texts()[DEVICE_TESTS], '    device_tests_windows:\n',
+                             '    extra_job: # not needed by device_tests\n        runs-on: ubuntu-24.04\n    device_tests_windows:\n')
+        lines = base.split('\n')
+        number = lines.index('    extra_job: # not needed by device_tests') + 2
+        lines[number - 1] = '        runs-on: ubuntu-26.04'
+        self.assert_rejected(validator.validate_file_change(DEVICE_TESTS, base, '\n'.join(lines)), 'api-level line')
+
+    def test_the_device_tests_aggregators_own_runs_on_cannot_move(self) -> None:
+        self.assert_rejected(self.edit_line(1196, '        runs-on: ubuntu-26.04'), 'api-level line')
+
+    def test_an_apple_label_cannot_move_through_the_runner_label_path(self) -> None:
+        for number in (551, 673, 905):
+            with self.subTest(number):
+                self.assert_rejected(self.edit_line(number, '        runs-on: xcode-28'), 'api-level line')
+
+    def test_the_ios_matrix_runner_lines_cannot_move(self) -> None:
+        self.assert_rejected(self.edit_line(779, '                        runner: macos-27'), 'api-level line')
+
+    def test_a_comment_that_holds_a_label_cannot_move(self) -> None:
+        lines = repo_texts()[DEVICE_TESTS].split('\n')
+        lines.insert(72, '        # runs-on: ubuntu-24.04')
+        base = '\n'.join(lines)
+        lines[72] = '        # runs-on: ubuntu-26.04'
+        self.assert_rejected(validator.validate_file_change(DEVICE_TESTS, base, '\n'.join(lines)), 'api-level line')
+
+    def test_a_job_taken_out_of_needs_in_the_base_cannot_move(self) -> None:
+        base = replaced_once(repo_texts()[DEVICE_TESTS], 'device_tests_android, device_tests_android_app, ', 'device_tests_android, ')
+        lines = base.split('\n')
+        lines[263] = '        runs-on: ubuntu-26.04'
+        self.assert_rejected(validator.validate_file_change(DEVICE_TESTS, base, '\n'.join(lines)), 'api-level line')
+
+    def test_a_head_that_adds_a_job_to_needs_and_moves_it_gains_nothing(self) -> None:
+        base = replaced_once(repo_texts()[DEVICE_TESTS], 'device_tests_android, device_tests_android_app, ', 'device_tests_android, ')
+        head = replaced_once(base, 'device_tests_android, device_tests_android_runtime',
+                             'device_tests_android, device_tests_android_app, device_tests_android_runtime')
+        lines = head.split('\n')
+        lines[263] = '        runs-on: ubuntu-26.04'
+        self.assert_rejected(validator.validate_file_change(DEVICE_TESTS, base, '\n'.join(lines)))
+
+    def test_a_needs_edit_alone_is_rejected(self) -> None:
+        self.assert_rejected(self.edit_device_tests('device_tests_android, device_tests_android_app, ', 'device_tests_android, '))
+
+    def test_a_dotnet_build_runs_on_edit_is_rejected(self) -> None:
+        base = repo_texts()[DOTNET_BUILD] + '\n    sign:\n        runs-on: windows-2025\n'
+        head = base.replace('runs-on: windows-2025', 'runs-on: windows-2028')
+        self.assert_rejected(validator.validate_file_change(DOTNET_BUILD, base, head), 'a person must make this edit')
+
+    def test_a_base_with_no_needs_line_cannot_be_read(self) -> None:
+        base = replaced_once(repo_texts()[DEVICE_TESTS], 'device_tests_android, device_tests_android_app, ', 'device_tests_android, ')
+        base = base.replace('        needs: [ device_tests_android, device_tests_android_runtime',
+                            '        needs_x: [ device_tests_android, device_tests_android_runtime')
+        self.assert_rejected(validator.validate_file_change(DEVICE_TESTS, base, base + '# x\n'), "can't be read")
+
     def test_too_many_blocks(self) -> None:
         lines = repo_texts()[DEVICE_TESTS].split('\n')
-        for number in range(1, 261, 20):
+        for number in range(1, 341, 20):
             lines[number] += ' x'
         self.assert_rejected(problems_of_edited_text(DEVICE_TESTS, '\n'.join(lines)), 'changed blocks')
 
